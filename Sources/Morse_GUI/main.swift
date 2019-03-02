@@ -60,7 +60,7 @@ func createBox(exitButtonTouched: @escaping (() -> Void)) -> Box {
     blinkButton.sensitive = false
     wordEntry.sensitive = false
     
-    ledController.send(string: "grhr") {
+    ledController.send(string: wordEntry.text) {
       blinkButton.sensitive = true
       wordEntry.sensitive = true
     }
