@@ -1,6 +1,7 @@
 import Gtk
 import CGtk
 import GLib
+import Foundation
 
 print("""
 # Project
@@ -57,6 +58,8 @@ func createBox(exitButtonTouched: @escaping (() -> Void)) -> Box {
   box.packStart(child: exitButton, expand: true, fill: true, padding: 8)
   
   blinkButton.onButton { (_, _) in
+    wordEntry.text = wordEntry.text.components(separatedBy: CharacterSet.letters.inverted).joined(separator: "")
+    
     blinkButton.sensitive = false
     wordEntry.sensitive = false
     
