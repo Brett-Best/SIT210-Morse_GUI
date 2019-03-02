@@ -55,7 +55,7 @@ class LEDController {
   func set(on: Bool) {
     print("Set LED to '\(on ? "on" : "off")'")
     #if !os(macOS)
-    GPIO(for: led)?.value = on ? 1 : 0
+    LEDGPIO.value = on ? 1 : 0
     #endif
   }
   
