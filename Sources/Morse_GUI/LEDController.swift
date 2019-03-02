@@ -38,15 +38,21 @@ class LEDController {
       }
       
       string.uppercased().forEach { character in
-        self.morseCodeMap[character]!.forEach { timeInterval in
-          turnOn(for: timeInterval)
-          turnOff(for: 1 * self.morseCodeUnit)
-        }
+        print("\(Date()) Starting Character: \(character)")
         
+        let morseCode = self.morseCodeMap[character]!
+        for (index, timeInterval) in morseCode.enumerated() {
+          turnOn(for: timeInterval)
+          if (index != morseCode.count - 1) {
+            turnOff(for: 1 * self.morseCodeUnit)
+          }
+        }
+
         turnOff(for: 3 * self.morseCodeUnit)
+        print("\(Date()) Ending Character: \(character)")
       }
       
-      DispatchQueue.main.async {
+      DispatchQueue.global().async {
         completion()
       }
     }
