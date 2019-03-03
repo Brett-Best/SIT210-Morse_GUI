@@ -59,6 +59,8 @@ class LEDController {
       
       print("\(Date()) Ending Character: \(character)")
     }
+    
+    completion()
   }
   
   func set(on: Bool) {
