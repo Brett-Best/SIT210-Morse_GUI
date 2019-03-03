@@ -17,6 +17,14 @@ Any | 13\n\n
 
 let ledController = LEDController()
 
+var sBlinkButton: Button?
+var sWordEntry: Entry?
+
+func setUserInput(enabled: Bool) {
+  sBlinkButton?.sensitive = enabled
+  sWordEntry?.sensitive = enabled
+}
+
 func createWindow(application: ApplicationProtocol) -> ApplicationWindow {
   var window = ApplicationWindow(application: application)
   
@@ -44,12 +52,14 @@ func createBox(exitButtonTouched: @escaping (() -> Void)) -> Box {
   box.packStart(child: label, expand: true, fill: true, padding: 8)
   
   var wordEntry = Entry()
+  sWordEntry = wordEntry
   wordEntry.placeholderText = "A word..."
   wordEntry.maxLength = 12
   wordEntry.inputPurpose = .alpha
   box.packStart(child: wordEntry, expand: true, fill: true, padding: 8)
   
-  var blinkButton = Button(label: "Blink")
+  let blinkButton = Button(label: "Blink")
+  sBlinkButton = blinkButton
   box.packStart(child: blinkButton, expand: true, fill: true, padding: 8)
   
   var exitButton = Button(label: "Exit")
@@ -60,12 +70,13 @@ func createBox(exitButtonTouched: @escaping (() -> Void)) -> Box {
   blinkButton.onButton { (_, _) in
     wordEntry.text = wordEntry.text.components(separatedBy: CharacterSet.letters.inverted).joined(separator: "")
     
-    blinkButton.sensitive = false
-    wordEntry.sensitive = false
+    setUserInput(enabled: false)
     
     ledController.send(string: wordEntry.text) {
-      blinkButton.sensitive = true
-      wordEntry.sensitive = true
+      g_idle_add({ (pointer) -> gboolean in
+        setUserInput(enabled: true)
+        return 0
+      }, nil)
     }
   }
   

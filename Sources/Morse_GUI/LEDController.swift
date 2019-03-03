@@ -1,5 +1,6 @@
 import Foundation
 import SwiftyGPIO
+import CGtk
 
 class LEDController {
   private let gpios = SwiftyGPIO.GPIOs(for: .RaspberryPi3)
@@ -26,41 +27,43 @@ class LEDController {
   }
   
   func send(string: String, completion: @escaping (() -> Void)) {
-    func turnOn(waitFor seconds: TimeInterval) {
-      self.set(on: true)
-      Thread.sleep(forTimeInterval: seconds)
-    }
-    
-    func turnOff(waitFor seconds: TimeInterval) {
-      self.set(on: false)
-      Thread.sleep(forTimeInterval: seconds)
-    }
-    
-    for (index, character) in string.uppercased().enumerated() {
-      print("\(Date()) Starting Character: \(character)")
+    DispatchQueue.global(qos: .background).async {
+      func turnOn(waitFor seconds: TimeInterval) {
+        self.set(on: true)
+        Thread.sleep(forTimeInterval: seconds)
+      }
       
-      let morseCode = self.morseCodeMap[character]!
+      func turnOff(waitFor seconds: TimeInterval) {
+        self.set(on: false)
+        Thread.sleep(forTimeInterval: seconds)
+      }
       
-      for (index, timeInterval) in morseCode.enumerated() {
-        turnOn(waitFor: timeInterval)
-        if (index != morseCode.count - 1) {
-          turnOff(waitFor: 1 * self.morseCodeUnit)
-        } else {
+      for (index, character) in string.uppercased().enumerated() {
+        print("\(Date()) Starting Character: \(character)")
+        
+        let morseCode = self.morseCodeMap[character]!
+        
+        for (index, timeInterval) in morseCode.enumerated() {
+          turnOn(waitFor: timeInterval)
+          if (index != morseCode.count - 1) {
+            turnOff(waitFor: 1 * self.morseCodeUnit)
+          } else {
+            turnOff(waitFor: 0)
+          }
+        }
+        
+        if (index != string.count - 1) {
+          turnOff(waitFor: 3 * self.morseCodeUnit)
+        }
+        else {
           turnOff(waitFor: 0)
         }
+        
+        print("\(Date()) Ending Character: \(character)")
       }
       
-      if (index != string.count - 1) {
-        turnOff(waitFor: 3 * self.morseCodeUnit)
-      }
-      else {
-        turnOff(waitFor: 0)
-      }
-      
-      print("\(Date()) Ending Character: \(character)")
+      completion()
     }
-    
-    completion()
   }
   
   func set(on: Bool) {
