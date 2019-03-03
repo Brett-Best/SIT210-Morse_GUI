@@ -26,40 +26,48 @@ class LEDController {
   }
   
   func send(string: String, completion: @escaping (() -> Void)) {
+    let operationQueue = OperationQueue.current
+    
     DispatchQueue.global(qos: .background).async {
-      func turnOn(for seconds: TimeInterval) {
+      func turnOn(waitFor seconds: TimeInterval) {
         self.set(on: true)
         Thread.sleep(forTimeInterval: seconds)
       }
       
-      func turnOff(for seconds: TimeInterval) {
+      func turnOff(waitFor seconds: TimeInterval) {
         self.set(on: false)
         Thread.sleep(forTimeInterval: seconds)
       }
       
-      string.uppercased().forEach { character in
+      for (index, character) in string.uppercased().enumerated() {
         print("\(Date()) Starting Character: \(character)")
         
         let morseCode = self.morseCodeMap[character]!
         for (index, timeInterval) in morseCode.enumerated() {
-          turnOn(for: timeInterval)
+          turnOn(waitFor: timeInterval)
           if (index != morseCode.count - 1) {
-            turnOff(for: 1 * self.morseCodeUnit)
+            turnOff(waitFor: 1 * self.morseCodeUnit)
+          } else {
+            turnOff(waitFor: 0)
           }
         }
-
-        turnOff(for: 3 * self.morseCodeUnit)
+        if (index != string.count - 1) {
+        turnOff(waitFor: 3 * self.morseCodeUnit)
+        }
+        else {
+          turnOff(waitFor: 0)
+        }
         print("\(Date()) Ending Character: \(character)")
       }
       
-      DispatchQueue.global().async {
+      operationQueue?.addOperation {
         completion()
       }
     }
   }
   
   func set(on: Bool) {
-    print("Set LED to '\(on ? "on" : "off")'")
+    print("\(Date()) Set LED to '\(on ? "on" : "off")'")
     #if !os(macOS)
     LEDGPIO.value = on ? 1 : 0
     #endif
