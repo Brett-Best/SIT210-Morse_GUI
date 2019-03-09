@@ -4,7 +4,7 @@ import GLib
 import Foundation
 
 class WindowController {
-  let window: Window
+  let window: WindowProtocol
   
   let application: ApplicationProtocol
   let ledController: LEDController
