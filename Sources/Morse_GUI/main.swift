@@ -15,81 +15,10 @@ Any | 13\n\n
 ## Logging:\n
 """)
 
-let ledController = LEDController()
-
-var sBlinkButton: Button?
-var sWordEntry: Entry?
-
-func setUserInput(enabled: Bool) {
-  sBlinkButton?.sensitive = enabled
-  sWordEntry?.sensitive = enabled
-}
-
-func createWindow(application: ApplicationProtocol) -> ApplicationWindow {
-  var window = ApplicationWindow(application: application)
-  
-  window.title = "Morse_GUI - LED"
-  window.set(position: .center)
-  window.setDefaultSize(width: 300, height: 200)
-  
-  let box = createBox(exitButtonTouched: {
-    ledController.reset()
-    application.quit()
-  })
-  
-  window.add(widget: box)
-  
-  return window
-}
-
-func createBox(exitButtonTouched: @escaping (() -> Void)) -> Box {
-  var box = Box(orientation: .vertical, spacing: 8)
-  box.marginStart = 8
-  box.marginEnd = 8
-  box.halign = .center
-  
-  let label = Label(str: "Type alphabetical characters to blink in morsecode.")
-  box.packStart(child: label, expand: true, fill: true, padding: 8)
-  
-  var wordEntry = Entry()
-  sWordEntry = wordEntry
-  wordEntry.placeholderText = "A word..."
-  wordEntry.maxLength = 12
-  wordEntry.inputPurpose = .alpha
-  box.packStart(child: wordEntry, expand: true, fill: true, padding: 8)
-  
-  let blinkButton = Button(label: "Blink")
-  sBlinkButton = blinkButton
-  box.packStart(child: blinkButton, expand: true, fill: true, padding: 8)
-  
-  var exitButton = Button(label: "Exit")
-  exitButton.halign = .fill
-  
-  box.packStart(child: exitButton, expand: true, fill: true, padding: 8)
-  
-  blinkButton.onButton { (_, _) in
-    wordEntry.text = wordEntry.text.components(separatedBy: CharacterSet.letters.inverted).joined(separator: "")
-    
-    setUserInput(enabled: false)
-    
-    ledController.send(string: wordEntry.text) {
-      g_idle_add({ (pointer) -> gboolean in
-        setUserInput(enabled: true)
-        return 0
-      }, nil)
-    }
-  }
-  
-  exitButton.onButton { (_, _) in
-    exitButtonTouched()
-  }
-  
-  return box
-}
-
 let status = Application.run { app in
-  let window = createWindow(application: app)
-  window.showAll()
+  let ledController = LEDController()
+  let windowController = WindowController(application: app, ledController: ledController)
+  windowController.window.showAll()
 }
 
 guard let status = status else {
